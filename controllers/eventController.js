@@ -26,13 +26,18 @@ exports.getEvents = async (req, res) => {
 exports.registerEvent = async (req, res) => {
   const userId = req.user.id;
   const eventId = req.params.eventId;
+
   try {
     const existingRegistration = await Registration.findOne({ user: userId, event: eventId });
-    if (existingRegistration) return res.status(400).json({ message: 'Already registered' });
+    if (existingRegistration) {
+      return res.status(400).json({ message: 'Already registered' });
+    }
 
-    const qrData = { userId, eventId, timestamp: new Date() };
-    const qrCodeData = await QRCode.toDataURL(JSON.stringify(qrData));
+    // Generate QR check-in URL
+    const qrCheckinURL = `${process.env.BASE_URL}/api/admin/checkin?eventId=${eventId}&userId=${userId}`;
+    const qrCodeData = await QRCode.toDataURL(qrCheckinURL);
 
+    // Save registration with QR data
     const newRegistration = new Registration({ user: userId, event: eventId, qrCodeData });
     await newRegistration.save();
 
@@ -49,13 +54,16 @@ exports.registerEvent = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: req.user.email,
       subject: 'Event Registration Confirmation',
-      html: `<p>You have successfully registered for the event.</p><img src="${qrCodeData}" alt="QR Code" />`,
+      html: `<p>You have successfully registered for the event.</p>
+             <p>Scan this QR code at the event to check in:</p>
+             <img src="${qrCodeData}" alt="QR Code" />`,
     };
 
     await transporter.sendMail(mailOptions);
 
     res.status(201).json({ message: 'Registered successfully. QR code sent to email.' });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
 };

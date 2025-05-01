@@ -1,36 +1,13 @@
 {
   "info": {
-    "_postman_id": "a3a3feff-1f58-46b0-8b8a-75929e0e55da",
     "name": "Event Management API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "event-api-collection-id"
   },
   "item": [
     {
       "name": "Authentication",
       "item": [
-        {
-          "name": "User Registration",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\",\n    \"studentId\": \"123456\",\n    \"password\": \"password123\",\n    \"role\": \"student\"\n}"
-            },
-            "url": {
-              "raw": "http://localhost:5000/api/auth/register",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "auth", "register"]
-            }
-          }
-        },
         {
           "name": "User Login",
           "request": {
@@ -38,26 +15,37 @@
             "header": [
               {
                 "key": "Content-Type",
-                "value": "application/json"
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"john@example.com\",\n    \"password\": \"password123\"\n}"
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/auth/login",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
               "path": ["api", "auth", "login"]
             }
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": 200,
+              "body": "{\n  \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n  \"user\": {\n    \"id\": \"12345\",\n    \"email\": \"user@example.com\"\n  }\n}"
+            },
+            {
+              "name": "Error",
+              "status": 401,
+              "body": "{\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
         }
       ]
     },
     {
-      "name": "Events",
+      "name": "Event Management",
       "item": [
         {
           "name": "Create Event",
@@ -65,45 +53,38 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
               },
               {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"title\": \"Hackathon 2025\",\n    \"description\": \"A 24-hour hackathon for developers\",\n    \"location\": \"SRM University\",\n    \"date\": \"2025-12-12\",\n    \"time\": \"09:00 AM\"\n}"
+              "raw": "{\n  \"title\": \"Tech Talk\",\n  \"description\": \"A talk on modern web development\",\n  \"location\": \"Auditorium\",\n  \"date\": \"2025-05-15\",\n  \"time\": \"10:00 AM\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/events",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "events"]
+              "raw": "{{base_url}}/api/events/create",
+              "host": ["{{base_url}}"],
+              "path": ["api", "events", "create"]
             }
-          }
-        },
-        {
-          "name": "Get All Events",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "http://localhost:5000/api/events",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "events"]
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": 201,
+              "body": "{\n  \"message\": \"Event created successfully\"\n}"
+            },
+            {
+              "name": "Error",
+              "status": 500,
+              "body": "{\n  \"message\": \"Server error\"\n}"
             }
-          }
+          ]
         },
         {
           "name": "Register for Event",
@@ -111,31 +92,38 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
-                "value": "Bearer {{user_token}}"
+                "value": "Bearer {{token}}",
+                "type": "text"
               }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"eventId\": \"{{event_id}}\"\n}"
+              "raw": "{\n  \"eventId\": \"{{eventId}}\"\n}"
             },
             "url": {
-              "raw": "http://localhost:5000/api/events/register/{{event_id}}",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "events", "register", "{{event_id}}"]
+              "raw": "{{base_url}}/api/events/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "events", "register"]
             }
-          }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": 201,
+              "body": "{\n  \"message\": \"Registered successfully. QR code sent to email.\"\n}"
+            },
+            {
+              "name": "Error",
+              "status": 400,
+              "body": "{\n  \"message\": \"Already registered\"\n}"
+            }
+          ]
         }
       ]
     },
     {
-      "name": "Admin Functions",
+      "name": "Admin Views",
       "item": [
         {
           "name": "View Attendees",
@@ -143,49 +131,29 @@
             "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
+                "value": "Bearer {{token}}",
+                "type": "text"
               }
             ],
             "url": {
-              "raw": "http://localhost:5000/api/admin/events/{{event_id}}/attendees",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "admin", "events", "{{event_id}}", "attendees"]
+              "raw": "{{base_url}}/api/admin/events/{{eventId}}/attendees",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "events", "{{eventId}}", "attendees"]
             }
-          }
-        },
-        {
-          "name": "Check In Attendee",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"userId\": \"{{user_id}}\",\n    \"eventId\": \"{{event_id}}\"\n}"
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": 200,
+              "body": "[\n  {\n    \"userId\": \"12345\",\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n]"
             },
-            "url": {
-              "raw": "http://localhost:5000/api/admin/checkin",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "admin", "checkin"]
+            {
+              "name": "Error",
+              "status": 404,
+              "body": "{\n  \"message\": \"Event not found\"\n}"
             }
-          }
+          ]
         },
         {
           "name": "Export Attendees CSV",
@@ -193,24 +161,72 @@
             "method": "GET",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
-                "value": "Bearer {{admin_token}}"
+                "value": "Bearer {{token}}",
+                "type": "text"
               }
             ],
             "url": {
-              "raw": "http://localhost:5000/api/admin/events/{{event_id}}/export",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "5000",
-              "path": ["api", "admin", "events", "{{event_id}}", "export"]
+              "raw": "{{base_url}}/api/admin/events/{{eventId}}/export",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "events", "{{eventId}}", "export"]
             }
           }
+        },
+        {
+          "name": "QR Code Check-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"qrCodeData\": \"sample-encoded-user-id-or-token\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/checkin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "checkin"]
+            }
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": 200,
+              "body": "{\n  \"message\": \"Check-in successful\",\n  \"attendee\": {\n    \"name\": \"John Doe\",\n    \"email\": \"john@example.com\"\n  }\n}"
+            },
+            {
+              "name": "Error",
+              "status": 400,
+              "body": "{\n  \"message\": \"Invalid QR code or already checked in\"\n}"
+            }
+          ]
         }
       ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "eventId",
+      "value": ""
     }
   ]
 }
